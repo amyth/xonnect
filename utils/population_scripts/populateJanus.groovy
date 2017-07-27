@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.janusgraph.core.JanusGraphFactory;
 import org.janusgraph.core.PropertyKey;
+import org.janusgraph.core.Multiplicity;
 import org.janusgraph.core.schema.SchemaAction;
 import org.janusgraph.core.schema.SchemaStatus;
 import org.janusgraph.core.util.JanusGraphCleanup;
@@ -20,7 +21,6 @@ class JanusGraphBuilder {
     GraphTraversalSource traversal;
 
     def dummyData;
-    
 
 
     public void main(String jsonPath, String janusGraphPath) {
@@ -77,9 +77,12 @@ class JanusGraphBuilder {
         def number = this.management.makePropertyKey("number").dataType(String.class).make()
         def email = this.management.makePropertyKey("email").dataType(String.class).make()
         def score = this.management.makePropertyKey("score").dataType(Float.class).make()
-        def linkedinId = this.management.makePropertyKey("linkedinId").dataType(String.class).make()
-        def linkedinUrl = this.management.makePropertyKey("linkedinUrl").dataType(String.class).make()
-        def imageUrl = this.management.makePropertyKey("imageUrl").dataType(String.class).make()
+        def linkedinId = this.management.makePropertyKey("linkedin_id").dataType(String.class).make()
+        def linkedinUrl = this.management.makePropertyKey("profile_url").dataType(String.class).make()
+        def imageUrl = this.management.makePropertyKey("image_url").dataType(String.class).make()
+        def instituteName = this.management.makePropertyKey("institute_name").dataType(String.class).make()
+        def companyName = this.management.makePropertyKey("company_name").dataType(String.class).make()
+        def jobId = this.management.makePropertyKey("job_id").dataType(String.class).make()
 
         // Create indexes
         this.management.buildIndex('uniqueUid', Vertex.class).addKey(uid).unique().buildCompositeIndex()
@@ -87,8 +90,32 @@ class JanusGraphBuilder {
         this.management.awaitGraphIndexStatus(this.graph, 'uniqueUid').call()
         this.management = this.graph.openManagement()
         this.management.updateIndex(this.management.getGraphIndex('uniqueUid'), SchemaAction.REINDEX).get()
+
+        // Define Vertex Labels
+        this.management.makeVertexLabel("person").make();
+        this.management.makeVertexLabel("candidate").make();
+        this.management.makeVertexLabel("recruiter").make();
+        this.management.makeVertexLabel("employee").make();
+        this.management.makeVertexLabel("phone").make();
+        this.management.makeVertexLabel("email").make();
+        this.management.makeVertexLabel("linkedin").make();
+        this.management.makeVertexLabel("job").make();
+        this.management.makeVertexLabel("company").make();
+        this.management.makeVertexLabel("institute").make();
+
+        // Define Edge Labels
+        this.management.makeEdgeLabel("knows").make();
+        this.management.makeEdgeLabel("has").make();
+        this.management.makeEdgeLabel("provided_by").make();
+        this.management.makeEdgeLabel("studied_at").make();
+        this.management.makeEdgeLabel("worked_at").make();
+        this.management.makeEdgeLabel("posted").make();
+        this.management.makeEdgeLabel("liked").make();
+        this.management.makeEdgeLabel("worked_with").make();
+        this.management.makeEdgeLabel("studied_with").make();
+        this.management.makeEdgeLabel("is_a_match_for").make();
         this.management.commit()
-        
+
         println "Created schema successfully"
     }
 
@@ -136,4 +163,4 @@ class JanusGraphBuilder {
 
 
 JanusGraphBuilder graphBuilder = new JanusGraphBuilder()
-graphBuilder.main("/tmp/dummy.json", "conf/janusgraph-cassandra.properties")
+graphBuilder.main("/tmp/dummy.json", "conf/testconf.properties")
