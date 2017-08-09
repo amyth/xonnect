@@ -35,8 +35,6 @@ class JanusGraphBuilder {
         edges.each {
             def relation = it.edge
             def properties = it.properties
-            println this.traversal.V()
-            println it.nodes[0]
             def vertexFrom = this.traversal.V().has("uid", it.nodes[0])[0]
             def vertexTo = this.traversal.V().has("uid", it.nodes[1])[0]
             def newEdge = vertexFrom.addEdge(relation, vertexTo)
@@ -70,6 +68,7 @@ class JanusGraphBuilder {
         // Do not create indexes while another transaction is in progress
         this.graph.tx().rollback()
         this.management = this.graph.openManagement()
+        this.management.set('ids.block-size', 20000000)
 
         // Make property keys
         def uid = this.management.makePropertyKey("uid").dataType(String.class).make()
@@ -84,24 +83,17 @@ class JanusGraphBuilder {
         def companyName = this.management.makePropertyKey("company_name").dataType(String.class).make()
         def jobId = this.management.makePropertyKey("job_id").dataType(String.class).make()
 
-        // Create indexes
-        this.management.buildIndex('uniqueUid', Vertex.class).addKey(uid).unique().buildCompositeIndex()
-        this.management.commit()
-        this.management.awaitGraphIndexStatus(this.graph, 'uniqueUid').call()
-        this.management = this.graph.openManagement()
-        this.management.updateIndex(this.management.getGraphIndex('uniqueUid'), SchemaAction.REINDEX).get()
-
         // Define Vertex Labels
         this.management.makeVertexLabel("person").make();
         this.management.makeVertexLabel("candidate").make();
         this.management.makeVertexLabel("recruiter").make();
         this.management.makeVertexLabel("employee").make();
-        this.management.makeVertexLabel("phone").make();
-        this.management.makeVertexLabel("email").make();
         this.management.makeVertexLabel("linkedin").make();
         this.management.makeVertexLabel("job").make();
         this.management.makeVertexLabel("company").make();
         this.management.makeVertexLabel("institute").make();
+        def phoneV = this.management.makeVertexLabel("phone").make();
+        def emailV = this.management.makeVertexLabel("email").make();
 
         // Define Edge Labels
         this.management.makeEdgeLabel("knows").make();
@@ -114,6 +106,16 @@ class JanusGraphBuilder {
         this.management.makeEdgeLabel("worked_with").make();
         this.management.makeEdgeLabel("studied_with").make();
         this.management.makeEdgeLabel("is_a_match_for").make();
+
+        // Create indexes
+        this.management.buildIndex('uniqueUid', Vertex.class).addKey(uid).unique().buildCompositeIndex()
+        this.management.buildIndex('uniqueEmail', Vertex.class).addKey(email).indexOnly(emailV).unique().buildCompositeIndex()
+        this.management.buildIndex('uniqueNumber', Vertex.class).addKey(number).indexOnly(phoneV).unique().buildCompositeIndex()
+        this.management.commit()
+        this.management.awaitGraphIndexStatus(this.graph, 'uniqueUid').call()
+        this.management = this.graph.openManagement()
+        this.management.updateIndex(this.management.getGraphIndex('uniqueUid'), SchemaAction.REINDEX).get()
+
         this.management.commit()
 
         println "Created schema successfully"

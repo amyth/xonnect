@@ -1,0 +1,6 @@
+<!-- https://mvnrepository.com/artifact/com.google.cloud.bigtable/bigtable-protos -->
+<dependency>
+    <groupId>com.google.cloud.bigtable</groupId>
+    <artifactId>bigtable-protos</artifactId>
+    <version>1.0.0-pre2</version>
+</dependency>
