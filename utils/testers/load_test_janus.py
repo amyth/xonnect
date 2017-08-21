@@ -7,7 +7,7 @@
 # @email:           mail@amythsingh.com
 # @website:         www.techstricks.com
 # @created_date: 03-08-2017
-# @last_modify: Mon Aug 21 17:23:54 2017
+# @last_modify: Mon Aug 21 22:18:46 2017
 ##
 ########################################
 
@@ -25,7 +25,7 @@ from locust import Locust, events, TaskSet, task
 
 
 #GREMLIN_SERVER = '172.16.65.133:8182'
-GREMLIN_SERVER = '35.198.251.39:8182'
+GREMLIN_SERVER = '35.198.251.227:8182'
 GRAPH = Graph()
 G = GRAPH.traversal().withRemote(DriverRemoteConnection('ws://{}/gremlin'.format(GREMLIN_SERVER), 'g'))
 
