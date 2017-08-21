@@ -9,6 +9,7 @@ import org.janusgraph.core.schema.SchemaStatus;
 import org.janusgraph.core.util.JanusGraphCleanup;
 import org.janusgraph.graphdb.database.StandardJanusGraph;
 import org.janusgraph.graphdb.database.management.ManagementSystem;
+import org.janusgraph.core.schema.ConsistencyModifier;
 
 /**
  * Given a json file, populates data into the given JanusGraph DB
@@ -16,7 +17,6 @@ import org.janusgraph.graphdb.database.management.ManagementSystem;
 class JanusGraphBuilder {
 
     String graphPath;
-    int transactionStep = 20000;
     StandardJanusGraph graph;
     ManagementSystem management;
     GraphTraversalSource traversal;
@@ -64,11 +64,11 @@ class JanusGraphBuilder {
         println "Created vertices successfully"
     }
 
-    public void createSchema() {
         println "Preparing schema."
         // Do not create indexes while another transaction is in progress
         this.graph.tx().rollback()
         this.management = this.graph.openManagement()
+        //this.management.set('ids.block-size', 20000000)
 
         // Make property keys
         def uid = this.management.makePropertyKey("uid").dataType(String.class).make()
@@ -83,27 +83,28 @@ class JanusGraphBuilder {
         def companyName = this.management.makePropertyKey("company_name").dataType(String.class).make()
         def jobId = this.management.makePropertyKey("job_id").dataType(String.class).make()
 
+        def phoneV = this.management.makeVertexLabel("phone").make();
+        def emailV = this.management.makeVertexLabel("email").make();
+
+
         // Create indexes
-        this.management.buildIndex('uniqueUid', Vertex.class).addKey(uid).unique().buildCompositeIndex()
-        this.management.buildIndex('uniqueEdgeUid', Edge.class).addKey(uid).buildCompositeIndex()
+        def uniqueUID = this.management.buildIndex('uniqueUid', Vertex.class).addKey(uid).unique().buildCompositeIndex()
+        this.management.setConsistency(uid, ConsistencyModifier.LOCK) // Ensures only one name per vertex
+        this.management.setConsistency(uniqueUID, ConsistencyModifier.LOCK) // Ensures name uniqueness in the graph
+        this.management.commit()
+        this.management = this.graph.openManagement()
+        def uniqueEmail = this.management.buildIndex('uniqueEmail', Vertex.class).addKey(email).indexOnly(emailV).unique().buildCompositeIndex()
+        this.management.setConsistency(email, ConsistencyModifier.LOCK) // Ensures only one name per vertex
+        this.management.setConsistency(uniqueEmail, ConsistencyModifier.LOCK) // Ensures name uniqueness in the graph
+        this.management.commit()
+        this.management = this.graph.openManagement()
+        def uniqueNum = this.management.buildIndex('uniqueNumber', Vertex.class).addKey(number).indexOnly(phoneV).unique().buildCompositeIndex()
+        this.management.setConsistency(number, ConsistencyModifier.LOCK) // Ensures only one name per vertex
+        this.management.setConsistency(uniqueNum, ConsistencyModifier.LOCK) // Ensures name uniqueness in the graph
         this.management.commit()
         this.management.awaitGraphIndexStatus(this.graph, 'uniqueUid').call()
-        this.management.awaitGraphIndexStatus(this.graph, 'uniqueEdgeUid').call()
         this.management = this.graph.openManagement()
         this.management.updateIndex(this.management.getGraphIndex('uniqueUid'), SchemaAction.REINDEX).get()
-        this.management.updateIndex(this.management.getGraphIndex('uniqueEdgeUid'), SchemaAction.REINDEX).get()
-
-        // Define Vertex Labels
-        this.management.makeVertexLabel("person").make();
-        this.management.makeVertexLabel("candidate").make();
-        this.management.makeVertexLabel("recruiter").make();
-        this.management.makeVertexLabel("employee").make();
-        this.management.makeVertexLabel("phone").make();
-        this.management.makeVertexLabel("email").make();
-        this.management.makeVertexLabel("linkedin").make();
-        this.management.makeVertexLabel("job").make();
-        this.management.makeVertexLabel("company").make();
-        this.management.makeVertexLabel("institute").make();
 
         // Define Edge Labels
         this.management.makeEdgeLabel("knows").make();
@@ -116,6 +117,16 @@ class JanusGraphBuilder {
         this.management.makeEdgeLabel("worked_with").make();
         this.management.makeEdgeLabel("studied_with").make();
         this.management.makeEdgeLabel("is_a_match_for").make();
+
+        // Define Vertex Labels
+        this.management.makeVertexLabel("person").make();
+        this.management.makeVertexLabel("candidate").make();
+        this.management.makeVertexLabel("recruiter").make();
+        this.management.makeVertexLabel("employee").make();
+        this.management.makeVertexLabel("linkedin").make();
+        this.management.makeVertexLabel("job").make();
+        this.management.makeVertexLabel("company").make();
+        this.management.makeVertexLabel("institute").make();
         this.management.commit()
 
         println "Created schema successfully"
@@ -123,33 +134,21 @@ class JanusGraphBuilder {
 
     public void populate() {
         // Create db schema
-     //   this.createSchema()
+        //this.createSchema()
 
         // Create vertexes from the given dummy data
-     //   def vertexTransaction = this.graph.newTransaction()
-     //   def vertexes = this.dummyData.vertexes;
-     //   this.createVertexes(vertexes)
-     //   vertexTransaction.commit()
-     //   this.initGraph()
+        def vertexTransaction = this.graph.newTransaction()
+        def vertexes = this.dummyData.vertexes;
+        this.createVertexes(vertexes)
+        vertexTransaction.commit()
+        this.initGraph()
 
+        def edgeTransaction = this.graph.newTransaction()
         // Create edges from the given dummy data
         def edges = this.dummyData.edges;
-        int totalEdges = edges.size();
-        int edgeI = 0;
-        while (edgeI < totalEdges) {       
-            def partialEdges = edges.take(this.transactionStep)
-            if (edgeI<=1120000){
-            }
-            else{
-            def edgeTransaction = this.graph.newTransaction()
-            this.createEdges(partialEdges)
-            edgeTransaction.commit()
-            this.initGraph()
-            println edgeI + "/" + totalEdges
-            }
-            edges = edges.drop(this.transactionStep);
-            edgeI += this.transactionStep;
-        }
+        this.createEdges(edges)
+        edgeTransaction.commit()
+        this.initGraph()
 
         println "Graph population successfully accomplished. Please hit Ctrl+C to exit." 
     }
@@ -159,7 +158,7 @@ class JanusGraphBuilder {
         def slurper = new JsonSlurper()
         def results = slurper.parseText(fileContents)
         this.dummyData = results;
-       // this.resetData()
+        //this.resetData()
     }
 
     public void resetData() {
