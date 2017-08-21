@@ -7,7 +7,7 @@
 # @email:           mail@amythsingh.com
 # @website:         www.techstricks.com
 # @created_date: 03-08-2017
-# @last_modify: Mon Aug 21 13:46:46 2017
+# @last_modify: Mon Aug 21 15:22:29 2017
 ##
 ########################################
 
@@ -26,15 +26,14 @@ from locust import Locust, events, TaskSet, task
 
 #GREMLIN_SERVER = '172.16.65.133:8182'
 GREMLIN_SERVER = '35.198.251.39:8182'
+GRAPH = Graph()
+G = GRAPH.traversal().withRemote(DriverRemoteConnection('ws://{}/gremlin'.format(GREMLIN_SERVER), 'g'))
 
 
 class LoadTestJanusTaskSet(TaskSet):
 
 
     def on_start(self):
-        self.graph = Graph()
-        self.g = self.graph.traversal().withRemote(DriverRemoteConnection(
-            'ws://{}/gremlin'.format(GREMLIN_SERVER), 'g'))
 
         with open('/tmp/uids.json', 'r') as json_file:
             self.uids = json.loads(json_file.read())
@@ -74,7 +73,7 @@ class LoadTestJanusTaskSet(TaskSet):
             total_time = int((time.time() - start_time) * 1000)
             events.request_failure.fire(request_type="websocket", name='create_person_with_email', response_time=total_time, exception=err)
 
-    #@task(3)
+    @task(3)
     def create_knows_connections(self):
         print('create_knows_connections')
         start_time = time.time()
@@ -111,7 +110,7 @@ class LoadTestJanusTaskSet(TaskSet):
         start_time = time.time()
         try:
             uid = random.choice(self.uids)
-            results = self.g.V().has('uid', uid).out('knows').valueMap(True)
+            results = G.V().has('uid', uid).out('knows').valueMap(True)
             total_time = int((time.time() - start_time) * 1000)
             events.request_success.fire(request_type="websocket", name='fetch_known_connections', response_time=total_time, response_length=0)
             return results
@@ -125,7 +124,7 @@ class LoadTestJanusTaskSet(TaskSet):
         start_time = time.time()
         try:
             uid = random.choice(self.uids)
-            results = self.g.V().has('uid', uid).as_("o").out("knows").as_("friends").out("worked_at").select("friends").dedup().valueMap(True)
+            results = G.V().has('uid', uid).as_("o").out("knows").as_("friends").out("worked_at").select("friends").dedup().valueMap(True)
             total_time = int((time.time() - start_time) * 1000)
             events.request_success.fire(request_type="websocket", name='fetch_working_connections', response_time=total_time, response_length=0)
             return results
@@ -151,7 +150,7 @@ class LoadTestJanusTaskSet(TaskSet):
                         type(existence_properties)))
         elif (check_existence and existence_properties and isinstance(
             existence_properties, dict)):
-            query_results = self.g.V().has(**existence_properties)
+            query_results = G.V().has(**existence_properties)
             exists = query_results.hasNext()
 
             if exists:
@@ -159,11 +158,11 @@ class LoadTestJanusTaskSet(TaskSet):
 
         # Create the vertex if it does not exist.
         if vertex is None:
-            vertex = self.g.addV(label).next()
+            vertex = G.addV(label).next()
             for key, value in properties.iteritems():
-                self.g.V(vertex.id).property(key, value).next()
+                G.V(vertex.id).property(key, value).next()
 
-        return self.g.V(vertex.id)
+        return G.V(vertex.id)
 
     def create_edge(self, fromV, toV, relation, **properties):
         """ Creates an edge between the given from and to vertex
@@ -173,7 +172,7 @@ class LoadTestJanusTaskSet(TaskSet):
 
         edge = fromV.addE(relation).to(toV).next()
         for key, value in properties.iteritems():
-            self.g.E(edge.id).property(key, value).next()
+            G.E(edge.id).property(key, value).next()
 
         return True, edge
 
