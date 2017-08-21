@@ -27,11 +27,13 @@ from locust import Locust, events, TaskSet, task
 #GREMLIN_SERVER = '172.16.65.133:8182'
 GREMLIN_SERVER = '35.198.251.39:8182'
 GRAPH = Graph()
-G = GRAPH.traversal().withRemote(DriverRemoteConnection('ws://{}/gremlin'.format(GREMLIN_SERVER), 'g'))
 
 
 class LoadTestJanusTaskSet(TaskSet):
 
+
+    def __init__(self):
+        self.g = GRAPH.traversal().withRemote(DriverRemoteConnection('ws://{}/gremlin'.format(GREMLIN_SERVER), 'g'))
 
     def on_start(self):
 
@@ -110,7 +112,7 @@ class LoadTestJanusTaskSet(TaskSet):
         start_time = time.time()
         try:
             uid = random.choice(self.uids)
-            results = G.V().has('uid', uid).out('knows').valueMap(True)
+            results = self.g.V().has('uid', uid).out('knows').valueMap(True)
             total_time = int((time.time() - start_time) * 1000)
             events.request_success.fire(request_type="websocket", name='fetch_known_connections', response_time=total_time, response_length=0)
             return results
@@ -124,7 +126,7 @@ class LoadTestJanusTaskSet(TaskSet):
         start_time = time.time()
         try:
             uid = random.choice(self.uids)
-            results = G.V().has('uid', uid).as_("o").out("knows").as_("friends").out("worked_at").select("friends").dedup().valueMap(True)
+            results = self.g.V().has('uid', uid).as_("o").out("knows").as_("friends").out("worked_at").select("friends").dedup().valueMap(True)
             total_time = int((time.time() - start_time) * 1000)
             events.request_success.fire(request_type="websocket", name='fetch_working_connections', response_time=total_time, response_length=0)
             return results
@@ -150,7 +152,7 @@ class LoadTestJanusTaskSet(TaskSet):
                         type(existence_properties)))
         elif (check_existence and existence_properties and isinstance(
             existence_properties, dict)):
-            query_results = G.V().has(**existence_properties)
+            query_results = self.g.V().has(**existence_properties)
             exists = query_results.hasNext()
 
             if exists:
@@ -158,11 +160,11 @@ class LoadTestJanusTaskSet(TaskSet):
 
         # Create the vertex if it does not exist.
         if vertex is None:
-            vertex = G.addV(label).next()
+            vertex = self.g.addV(label).next()
             for key, value in properties.iteritems():
-                G.V(vertex.id).property(key, value).next()
+                self.g.V(vertex.id).property(key, value).next()
 
-        return G.V(vertex.id)
+        return self.g.V(vertex.id)
 
     def create_edge(self, fromV, toV, relation, **properties):
         """ Creates an edge between the given from and to vertex
@@ -172,7 +174,7 @@ class LoadTestJanusTaskSet(TaskSet):
 
         edge = fromV.addE(relation).to(toV).next()
         for key, value in properties.iteritems():
-            G.E(edge.id).property(key, value).next()
+            self.g.E(edge.id).property(key, value).next()
 
         return True, edge
 
