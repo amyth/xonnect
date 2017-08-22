@@ -7,7 +7,7 @@
 # @email:           mail@amythsingh.com
 # @website:         www.techstricks.com
 # @created_date: 03-08-2017
-# @last_modify: Mon Aug 21 22:18:46 2017
+# @last_modify: Tue Aug 22 12:25:12 2017
 ##
 ########################################
 
@@ -114,7 +114,6 @@ class LoadTestJanusTaskSet(TaskSet):
         try:
             uid = random.choice(self.uids)
             results = G.V().has('uid', uid).out('knows').limit(100).values().toList()
-            print(results)
             total_time = int((time.time() - start_time) * 1000)
             events.request_success.fire(request_type="websocket", name='fetch_known_connections', response_time=total_time, response_length=0)
             return results
@@ -129,7 +128,7 @@ class LoadTestJanusTaskSet(TaskSet):
         try:
             uid = random.choice(self.uids)
             results = G.V().has('uid', uid).out("knows").as_("friends").out("worked_at").select("friends").dedup().limit(50).values().toList()
-            print(results)
+            print(uid)
             total_time = int((time.time() - start_time) * 1000)
             events.request_success.fire(request_type="websocket", name='fetch_working_connections', response_time=total_time, response_length=0)
             return results
