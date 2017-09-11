@@ -6,12 +6,14 @@
 # @author:          Amyth
 # @email:           mail@amythsingh.com
 # @website:         www.techstricks.com
-# @created_date: 24-08-2017
-# @last_modify: Fri Aug 25 12:47:32 2017
+# @created_date: 25-08-2017
+# @last_modify: Fri Aug 25 12:51:22 2017
 ##
 ########################################
 
-APPS = [
-    'home',
-    'candidates',
+from .resources import import_contacts
+
+
+ROUTES = [
+    ['/candidates/{uid}/contacts/{source}', import_contacts]
 ]
