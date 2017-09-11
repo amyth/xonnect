@@ -38,22 +38,21 @@ class JanusGraphBuilder {
     public void createVertexes(def vertexes) {
         println "Preparing vertices."
         vertexes.row.each {
-            try{
-                def uniqueLabel = "candidate"
                 it.each {
-                    def newVertex = this.graph.addVertex(label, uniqueLabel)
-                    newVertex.property("uid", it.uid[0])
-                    newVertex.property("name", it.name[0])
-                    newVertex.property("title", it.title[0])
-                    // println "(UID::: " +  it.uid[0] + ") (name::: " +  it.name[0] + ") (title ::: " + it.title[0] +")"
-                      
+                    try{
+                        def uniqueLabel = "candidate"
+                        def newVertex = this.graph.addVertex(label, uniqueLabel)
+                        newVertex.property("uid", it.uid[0])
+                        newVertex.property("name", it.name[0])
+                        newVertex.property("title", it.title[0])
+                        // println "(UID::: " +  it.uid[0] + ") (name::: " +  it.name[0] + ") (title ::: " + it.title[0] +")"
+                    } catch(SchemaViolationException e){
+                        println "NOT ADDING UNIQUE EXCEPTION:::   " + it.toString()
+                    }
                 }
-            } catch(SchemaViolationException e){
-                println "NOT ADDING UNIQUE EXCEPTION:::   " + it.toString()
-            }
-        }
         this.graph.tx().commit()
         println "Created vertices successfully"
+        }
     }
 
     public void populate() {
@@ -90,4 +89,3 @@ class JanusGraphBuilder {
 
 JanusGraphBuilder graphBuilder = new JanusGraphBuilder()
 graphBuilder.main("/Users/admin/Documents/scripts/json_data/candidate.json", "conf/janusgraph-cassandra.properties")
-
