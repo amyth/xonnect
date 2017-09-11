@@ -42,7 +42,8 @@ class JanusGraphBuilder {
                 def uniqueLabel = "email"
                 it.each {
                     def newVertex = this.graph.addVertex(label, uniqueLabel)
-                    newVertex.property(it.uid[0], it.email[0])
+                    newVertex.property("uid", it.uid[0])
+                    newVertex.property("email", it.email[0])
                 }
             } catch(SchemaViolationException e){
                 println "NOT ADDING UNIQUE EXCEPTION:::   " + it.toString()

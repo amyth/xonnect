@@ -21,7 +21,7 @@ class JanusGraphBuilder {
     public void main(String janusGraphPath) {
         this.graphPath  = janusGraphPath
         this.initGraph()
-        this.reset()
+        this.resetData()
         this.createSchema()
     }
 

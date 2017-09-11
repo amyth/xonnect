@@ -39,10 +39,14 @@ class JanusGraphBuilder {
         println "Preparing vertices."
         vertexes.row.each {
             try{
-                def uniqueLabel = "email"
+                def uniqueLabel = "candidate"
                 it.each {
                     def newVertex = this.graph.addVertex(label, uniqueLabel)
-                    newVertex.property(it.uid[0], it.email[0])
+                    newVertex.property("uid", it.uid[0])
+                    newVertex.property("name", it.name[0])
+                    newVertex.property("title", it.title[0])
+                    // println "(UID::: " +  it.uid[0] + ") (name::: " +  it.name[0] + ") (title ::: " + it.title[0] +")"
+                      
                 }
             } catch(SchemaViolationException e){
                 println "NOT ADDING UNIQUE EXCEPTION:::   " + it.toString()
@@ -59,7 +63,7 @@ class JanusGraphBuilder {
           this.createVertexes(vertexes)
           vertexTransaction.commit()
           this.initGraph()
-          println "Email Nodes population successfully accomplished. Please hit Ctrl+C to exit." 
+          println "Candidate  Nodes population successfully accomplished. Please hit Ctrl+C to exit." 
     }
 
 
@@ -85,5 +89,5 @@ class JanusGraphBuilder {
 
 
 JanusGraphBuilder graphBuilder = new JanusGraphBuilder()
-graphBuilder.main("/Users/admin/Documents/scripts/json_data/email.json", "conf/janusgraph-cassandra.properties")
+graphBuilder.main("/Users/admin/Documents/scripts/json_data/candidate.json", "conf/janusgraph-cassandra.properties")
 
