@@ -40,7 +40,7 @@ class JanusGraphBuilder {
         vertexes.row.each {
                 it.each {
                     try{
-                        def uniqueLabel = "candidate"
+                        def uniqueLabel = "employee"
                         def exists = this.traversal.V().has('uid', it.uid[0]).size() >= 1
                         //println exists
                         if(!exists){
@@ -66,7 +66,7 @@ class JanusGraphBuilder {
           this.createVertexes(vertexes)
           vertexTransaction.commit()
           this.initGraph()
-          println "Candidate  Nodes population successfully accomplished. Please hit Ctrl+C to exit." 
+          println "Employee Nodes population successfully accomplished. Please hit Ctrl+C to exit." 
     }
 
 
@@ -92,4 +92,4 @@ class JanusGraphBuilder {
 
 
 JanusGraphBuilder graphBuilder = new JanusGraphBuilder()
-graphBuilder.main("/Users/admin/Documents/scripts/json_data/candidate.json", "conf/janusgraph-cassandra.properties")
+graphBuilder.main("/Users/admin/Documents/scripts/json_data/employee.json", "conf/janusgraph-cassandra.properties")

@@ -35,7 +35,6 @@ class JanusGraphBuilder {
         // Make property keys
         def uid = this.management.makePropertyKey("uid").dataType(String.class).make()
         def name = this.management.makePropertyKey("name").dataType(String.class).make()
-        def title = this.management.makePropertyKey("title").dataType(String.class).make()
         def email = this.management.makePropertyKey("email").dataType(String.class).make()
         def number = this.management.makePropertyKey("number").dataType(String.class).make()
         def score = this.management.makePropertyKey("score").dataType(String.class).make()
@@ -73,6 +72,7 @@ class JanusGraphBuilder {
         this.management.makeEdgeLabel("worked_with").make();
         this.management.makeEdgeLabel("studied_with").make();
         this.management.makeEdgeLabel("is_a_match_for").make();
+        this.management.makeEdgeLabel("knows_by_name").make();
         println "Edge Labels (not commited)"
 
         // Create indexes

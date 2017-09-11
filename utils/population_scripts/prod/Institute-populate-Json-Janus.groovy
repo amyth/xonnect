@@ -38,22 +38,20 @@ class JanusGraphBuilder {
     public void createVertexes(def vertexes) {
         println "Preparing vertices."
         vertexes.row.each {
-                it.each {
-                    try{
-                        def uniqueLabel = "candidate"
-                        def exists = this.traversal.V().has('uid', it.uid[0]).size() >= 1
-                        //println exists
-                        if(!exists){
-                            def newVertex = this.graph.addVertex(label, uniqueLabel)
-                            newVertex.property("uid", it.uid[0])
-                            // newVertex.property("name", it.name[0])
-                            // newVertex.property("title", it.title[0])
-                            // println "(UID::: " +  it.uid[0] + ") (name::: " +  it.name[0] + ") (title ::: " + it.title[0] +")"
-                        }
-                    } catch(SchemaViolationException e){
-                        println "NOT ADDING UNIQUE EXCEPTION:::   " + it.toString()
+            def uniqueLabel = "institute"
+            it.each {
+                try{
+                    def exists = this.traversal.V().has('uid', it.uid[0]).size() >= 1
+                    //println exists
+                    if(!exists){
+                        def newVertex = this.graph.addVertex(label, uniqueLabel)
+                        newVertex.property("uid", it.uid[0])
+                        newVertex.property("name", it.name[0])
                     }
+                } catch(SchemaViolationException e){
+                    println "NOT ADDING UNIQUE EXCEPTION:::   " + it.toString()
                 }
+            }
         this.graph.tx().commit()
         println "Created vertices successfully"
         }
@@ -66,7 +64,7 @@ class JanusGraphBuilder {
           this.createVertexes(vertexes)
           vertexTransaction.commit()
           this.initGraph()
-          println "Candidate  Nodes population successfully accomplished. Please hit Ctrl+C to exit." 
+          println "Institute Nodes population successfully accomplished. Please hit Ctrl+C to exit." 
     }
 
 
@@ -92,4 +90,5 @@ class JanusGraphBuilder {
 
 
 JanusGraphBuilder graphBuilder = new JanusGraphBuilder()
-graphBuilder.main("/Users/admin/Documents/scripts/json_data/candidate.json", "conf/janusgraph-cassandra.properties")
+graphBuilder.main("/Users/admin/Documents/scripts/json_data/institute.json", "conf/janusgraph-cassandra.properties")
+
