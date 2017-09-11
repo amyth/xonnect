@@ -41,11 +41,15 @@ class JanusGraphBuilder {
                 it.each {
                     try{
                         def uniqueLabel = "candidate"
-                        def newVertex = this.graph.addVertex(label, uniqueLabel)
-                        newVertex.property("uid", it.uid[0])
-                        newVertex.property("name", it.name[0])
-                        newVertex.property("title", it.title[0])
-                        // println "(UID::: " +  it.uid[0] + ") (name::: " +  it.name[0] + ") (title ::: " + it.title[0] +")"
+                        def exists = this.traversal.V().has('uid', it.uid[0]).size() >= 1
+                        //println exists
+                        if(!exists){
+                            def newVertex = this.graph.addVertex(label, uniqueLabel)
+                            newVertex.property("uid", it.uid[0])
+                            newVertex.property("name", it.name[0])
+                            newVertex.property("title", it.title[0])
+                            // println "(UID::: " +  it.uid[0] + ") (name::: " +  it.name[0] + ") (title ::: " + it.title[0] +")"
+                        }
                     } catch(SchemaViolationException e){
                         println "NOT ADDING UNIQUE EXCEPTION:::   " + it.toString()
                     }

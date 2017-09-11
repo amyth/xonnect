@@ -36,22 +36,23 @@ class JanusGraphBuilder {
     }
 
     public void createVertexes(def vertexes) {
-        println "Preparing vertices."
+        println "Preparing vertices." 
         vertexes.row.each {
-            def uniqueLabel = "email"
             it.each {
-                try{
-                    def exists = this.traversal.V().has('uid', it.uid[0]).size() >= 1
-                    //println exists
-                    if(!exists){
-                        def newVertex = this.graph.addVertex(label, uniqueLabel)
-                        newVertex.property("uid", it.uid[0])
-                        newVertex.property("email", it.email[0])
-                    }
-                } catch(SchemaViolationException e){
-                    println "NOT ADDING UNIQUE EXCEPTION:::   " + it.toString()
+                try {
+                        def uniqueLabel = "phone"
+                        def exists = this.traversal.V().has('uid', it.uid[0]).size() >= 1
+                        //println exists
+                        if(!exists){
+                            def newVertex = this.graph.addVertex(label, uniqueLabel)
+                            newVertex.property("uid", it.uid[0])
+                            newVertex.property("number", it.number[0])
+                            //println " (UID::: " +  it.uid[0] + ") (number::: " +  it.number[0] + ")"
+                        }
+                    } catch(SchemaViolationException e) {
+                        println "NOT ADDING UNIQUE EXCEPTION:::   " + it.toString()
                 }
-            }
+        }
         this.graph.tx().commit()
         println "Created vertices successfully"
         }
@@ -64,7 +65,7 @@ class JanusGraphBuilder {
           this.createVertexes(vertexes)
           vertexTransaction.commit()
           this.initGraph()
-          println "Email Nodes population successfully accomplished. Please hit Ctrl+C to exit." 
+          println "Phone Nodes population successfully accomplished. Please hit Ctrl+C to exit." 
     }
 
 
@@ -90,5 +91,4 @@ class JanusGraphBuilder {
 
 
 JanusGraphBuilder graphBuilder = new JanusGraphBuilder()
-graphBuilder.main("/Users/admin/Documents/scripts/json_data/email.json", "conf/janusgraph-cassandra.properties")
-
+graphBuilder.main("/Users/admin/Documents/scripts/json_data/phone.json", "conf/janusgraph-cassandra.properties")
