@@ -37,7 +37,7 @@ class JanusGraphBuilder {
         def name = this.management.makePropertyKey("name").dataType(String.class).make()
         def email = this.management.makePropertyKey("email").dataType(String.class).make()
         def number = this.management.makePropertyKey("number").dataType(String.class).make()
-        def score = this.management.makePropertyKey("score").dataType(String.class).make()
+        def score = this.management.makePropertyKey("score").dataType(Float.class).make()
         def linkedinId  = this.management.makePropertyKey("linkedin_id").dataType(String.class).make()
         def linkedinUrl = this.management.makePropertyKey("linkedin_url").dataType(String.class).make()
         def imageUrl = this.management.makePropertyKey("image_url").dataType(String.class).make()
