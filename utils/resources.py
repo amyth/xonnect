@@ -7,7 +7,7 @@
 # @email:           mail@amythsingh.com
 # @website:         www.techstricks.com
 # @created_date: 25-08-2017
-# @last_modify: Thu Sep  7 17:49:27 2017
+# @last_modify: Mon Sep 11 13:46:25 2017
 ##
 ########################################
 
@@ -25,6 +25,7 @@ class BaseValidatedResource(object):
     def validate(self, req, resp, **params):
         try:
             data = json.loads(req.stream.read())
+            setattr(req, 'data', data)
         except Exception as e:
             raise ValidationError('Could not read request data: {}'.format(
                     str(e)))
