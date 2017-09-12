@@ -7,7 +7,7 @@
 # @email:           mail@amythsingh.com
 # @website:         www.techstricks.com
 # @created_date: 11-09-2017
-# @last_modify: Mon Sep 11 19:43:20 2017
+# @last_modify: Tue Sep 12 13:47:59 2017
 ##
 ########################################
 
@@ -51,7 +51,7 @@ def _update_keys(obj, key_map):
     results = {}
 
     try:
-        for key, val in obj.iteritems():
+        for key, val in obj.items():
             if isinstance(val, dict):
                 val = _update_keys(val, key_map)
 
@@ -68,7 +68,7 @@ def _update_keys(obj, key_map):
             else:
                 results[key] = val
     except Exception as err:
-        pass
+        print(str(err))
 	#TODO: Implement logging and log the exception
         #logger.error("Error shortening keys: %s" % str(err))
 

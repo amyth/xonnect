@@ -7,49 +7,26 @@
 # @email:           mail@amythsingh.com
 # @website:         www.techstricks.com
 # @created_date: 24-08-2017
-# @last_modify: Mon Sep 11 19:41:47 2017
+# @last_modify: Tue Sep 12 19:12:49 2017
 ##
 ########################################
 
-import asyncio
 import celery
 import falcon
-import goblin
 import os
 import importlib
 
-from .settings import APPS
-from apps.core.models import (
-    Person,
-    Candidate,
-    Recruiter,
-    Employee,
-    Phone,
-    Email,
-    LinkedIn,
-    Job,
-    Company,
-    Institute,
-    Has,
-    Knows,
-    WorkedWith,
-    StudiedWith,
-    WorkedAt,
-    StudiedAt,
-    ProvidedBy,
-    Posted,
-    Likes,
-    IsAMatchFor
-)
+from gremlin_python.structure.graph import Graph
+from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+from .settings import APPS, GREMLIN_PATH, GREMLIN_TRAVERSAL_SOURCE
 
 # Initialize celery app
 celery_app = celery.Celery('xonnect', broker='amqp://guest@localhost//')
 
-# Initialize goblin app
-loop = asyncio.get_event_loop()
-goblin_app = loop.run_until_complete(goblin.Goblin.open(loop))
-path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'goblin.yml')
-goblin_app.config_from_file(path)
+# Initialize gremlin client
+graph = Graph()
+connection = DriverRemoteConnection(GREMLIN_PATH, GREMLIN_TRAVERSAL_SOURCE)
+graph_traversal = graph.traversal().withRemote(connection)
 
 # Initialize xonnect apis
 xonnect_app = falcon.API()

@@ -7,13 +7,16 @@
 # @email:           mail@amythsingh.com
 # @website:         www.techstricks.com
 # @created_date: 25-08-2017
-# @last_modify: Mon Sep 11 15:34:34 2017
+# @last_modify: Wed Sep 13 13:49:15 2017
 ##
 ########################################
 
-from .resources import import_contacts
+from .resources import (
+    fetch_connections,
+    import_contacts
+)
 
 
 ROUTES = [
-    ['/{user_type}/{uid}/contacts/{source}', import_contacts]
+    ['/{user_type}/{uid}/contacts/{source}', import_contacts],
 ]

@@ -7,12 +7,11 @@
 # @email:           mail@amythsingh.com
 # @website:         www.techstricks.com
 # @created_date: 25-08-2017
-# @last_modify: Tue Sep 12 11:51:12 2017
+# @last_modify: Wed Sep 13 12:34:06 2017
 ##
 ########################################
 
 
-import asyncio
 import falcon
 import json
 
@@ -25,8 +24,10 @@ from utils.helpers import (
     update_keys
 )
 from utils.mappings import KEY_MAP
-from utils.resources import ValidatedPostResource
-
+from utils.resources import (
+    ValidatedGetResource,
+    ValidatedPostResource
+)
 
 
 class ImportContacts(ValidatedPostResource):
@@ -34,9 +35,7 @@ class ImportContacts(ValidatedPostResource):
     required_fields = ['data']
 
     def post(self, req, resp, **params):
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.upload_contacts(req, resp, **params))
-        loop.close()
+        self.upload_contacts(req, resp, **params)
         resp.status = falcon.HTTP_201
         resp.content_type = 'application/json'
         resp.body = json.dumps({'message': 'success'})
@@ -46,7 +45,7 @@ class ImportContacts(ValidatedPostResource):
             raise ValidationError('No request data could be found.')
 
 
-    async def upload_contacts(self, req, resp, **params):
+    def upload_contacts(self, req, resp, **params):
         uid = params.get('uid')
         source = params.get('source')
         user_type = get_graph_label(params.get('user_type'))
@@ -55,8 +54,14 @@ class ImportContacts(ValidatedPostResource):
         )
         keymap = KEY_MAP.get(source.lower(), {})
         contacts = update_keys(contacts_data, keymap)
-        await upload_contacts(uid, user_type, source, contacts)
+        upload_contacts.apply_async(args=(
+                uid, user_type, source, contacts))
 
+
+class FetchConnections(ValidatedGetResource):
+    def get(self, req, resp, **params):
+        pass
 
 
 import_contacts = ImportContacts()
+fetch_connections = FetchConnections()
